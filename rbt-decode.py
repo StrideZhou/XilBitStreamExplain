@@ -140,12 +140,18 @@ def decode(rbtfile, outfile, outfile2, outputhex):
                 exp += "\n" + cmd_code_exp.get(cmd)
 
                 if (cmd == cmd_name_code.get('WCFG') )& outputhex: 
+                    isCFGdata = 1
                     CFGaddr = FAR
-                    hex = "\n\n\n@%08X\n" % CFGaddr
+                    hex = '\n@%08X:' % CFGaddr
+                    sys.stdout.write('@CFGaddr%d\n' % CFGaddr)
 
             elif reg_addr == reg_name_code.get('FDRI'): 
-                isCFGdata = 1
-                if outputhex: hex = "%08X\n" % int(bitstream,2)  
+                if outputhex: hex = "%08X" % int(bitstream,2)  
+
+            elif reg_addr == reg_name_code.get('FAR'): 
+                exp += "%08X" % int(bitstream,2)   
+                FAR = int(bitstream,2)
+                sys.stdout.write('@FAR%d\n' % FAR)
 
             else:
                 exp += "%08X" % int(bitstream,2)        
@@ -171,8 +177,7 @@ def decode(rbtfile, outfile, outfile2, outputhex):
                         exp += "\t" + reg_exp.get(reg_addr)
                     except :
                         exp += "\t" + "---------UNKNOWN ADDR--------"
-                    
-                    if(reg_addr == reg_name_code.get('FAR')) : FAR = int(reg_addr,2)
+                    if data_word > 1: sys.stdout.write('got word %d\n' % data_word) 
 
             elif bitstream[:3] == "010": # type2
                 exp += "Type2" + "\t" + opcode_format.get(bitstream[-29:-27])
@@ -180,12 +185,15 @@ def decode(rbtfile, outfile, outfile2, outputhex):
                     data_word = int(bitstream[-27:],2)
                     exp += "\t" + "%d" % data_word + "word"
 
+                    sys.stdout.write('got word %d\n' % data_word)    
+
             else : exp += "%08X" % int(bitstream,2)
+        
 
         if isCFGdata == 0: 
             outfile.write( bitstream + " " + exp + '\n')    
         elif outputhex:
-            outfile2.write( hex ) 
+            outfile2.write( hex + '\n') 
             
 
 
@@ -193,6 +201,8 @@ def main():
     parser = argparse.ArgumentParser(
         description='Convert a rbt file to a format that can be read. '
                     'By default read from stdin and write to stdout.'
+                    'eg: '
+                    'CMD> for %i in (*.rbt) do (python .\\rbt-decode.py --h %i %i.data > %i.log) '
     )
 
     parser.add_argument('--h', 
