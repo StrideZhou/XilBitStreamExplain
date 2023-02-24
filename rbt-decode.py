@@ -142,7 +142,7 @@ def decode(rbtfile, outfile, outfile2, outputhex):
                 if (cmd == cmd_name_code.get('WCFG') )& outputhex: 
                     isCFGdata = 1
                     CFGaddr = FAR
-                    hex = '\n@%08X:' % CFGaddr
+                    hex = '\n@%08X' % CFGaddr
                     sys.stdout.write('@CFGaddr%d\n' % CFGaddr)
 
             elif reg_addr == reg_name_code.get('FDRI'): 
